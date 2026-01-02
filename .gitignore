@@ -1,0 +1,32 @@
+# --- C++ 컴파일 결과물 (절대 올리면 안 됨) ---
+*.exe
+*.out
+*.o
+*.obj
+*.dll
+*.so
+*.dylib
+
+# --- 빌드 폴더 ---
+build/
+bin/
+Debug/
+Release/
+x64/
+x86/
+
+# --- VS Code 설정 (개인 설정은 제외) ---
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+# settings.json은 개인 취향이 많아서 보통 뺍니다. 팀 프로젝트면 포함해도 됨.
+
+# --- OS 관련 쓰레기 파일 ---
+.DS_Store
+Thumbs.db
+
+# --- WSL/Linux 관련 ---
+# 윈도우와 리눅스를 오갈 때 생기는 임시 파일들
+*~
+*.swp
