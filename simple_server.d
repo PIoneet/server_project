@@ -1,2 +1,3 @@
-simple_server.o: simple_server.cpp packet_tcp.h
+simple_server.o: simple_server.cpp packet_tcp.h packet_type.h
 packet_tcp.h:
+packet_type.h:

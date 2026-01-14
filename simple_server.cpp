@@ -1,5 +1,6 @@
 #include "packet_tcp.h"
 #include <netinet/in.h>
+#include "packet_type.h"
 
 int main() {
     // 1. 소켓 생성 (핸드폰 사기)
@@ -15,6 +16,10 @@ int main() {
     server_addr.sin_port = htons(7777); // 포트 번호: 7777 (게임 서버 단골 포트)
     server_addr.sin_addr.s_addr = INADDR_ANY; // 아무나 다 받아라
 
+
+    int enable = 1;
+    // (이미 사용 중인 주소/포트라도 강제로 다시 바인딩해라)
+    setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(enable));
     // 3. 바인딩 (유심칩 꽂기)
     if (bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
         cerr << "바인딩 실패! (이미 켜져 있거나 권한 문제)" << endl;
@@ -34,7 +39,7 @@ int main() {
     sockaddr_in client_addr;
     socklen_t client_addr_size = sizeof(client_addr);
     int client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &client_addr_size);
-    
+    //커널이 IP 주소 방식(IPv4, IPv6 등)에 맞게 소켓을 만들어줌
     if (client_sock == -1) {
         cerr << "접속 수락 실패!" << endl;
         return -1;
@@ -44,7 +49,7 @@ int main() {
     cout << ">>> 클라이언트(Windows)가 접속했습니다! <<<" << endl;
    
     ReceiveBuffer recvBuffer;
-    ProcessRecv(client_sock, recvBuffer);
+    HandlePacket(client_sock, &recvBuffer);
     close(server_sock);
     return 0;
 }

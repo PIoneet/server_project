@@ -9,12 +9,6 @@
 
 using namespace std;
 
-// 1. 패킷 헤더 정의 (2바이트 길이 정보)
-#pragma pack(push, 1) // 1바이트 정렬 (패딩 방지)
-struct PacketHeader {
-    uint16_t len; // 송수신 데이터는 패딩 없이
-};
-#pragma pack(pop)
 
 class ReceiveBuffer {
     vector<char> _buffer;
@@ -66,5 +60,5 @@ public:
     // F. 읽을 데이터의 시작 포인터
     char* GetReadPtr() { return &_buffer[_readPos]; }
 };
-
+void HandlePacket(int clientSock, ReceiveBuffer* recvBuffer);
 void ProcessRecv(int clientSock, ReceiveBuffer& recvBuffer);

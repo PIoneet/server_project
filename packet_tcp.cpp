@@ -1,29 +1,8 @@
 #include "packet_tcp.h"
+#include "packet_type.h"
 
 void ProcessRecv(int clientSock, ReceiveBuffer& recvBuffer) {
-    while (true) {
-        // 1. 빈 공간 확인 (꽉 찼으면 에러 처리)
-        if (recvBuffer.GetFreeSize() <= 0) {
-            cerr << "버퍼 오버플로우! (해커의 공격이거나 로직 오류)" << endl;
-            break;
-        }
-
-        // 2. 소켓에서 데이터 수신 (Recv)
-        // 주의: 여기서 buf가 아니라 버퍼의 다음 메모리 번지 포인터를 줌
-        //버퍼를 매번 초기화하지 않고 이어서 데이터를 받는 방식이기 때문
-        int len = recv(clientSock, recvBuffer.GetWritePtr(), recvBuffer.GetFreeSize(), 0);
-        //len에는 커널 버퍼에서 가져온 바이트 수가 담김.
-
-        if (len == 0) {
-            cout << "연결 종료" << endl;
-            break;
-        }
-
-        // 3. 버퍼에 "len만큼 물이 찼다"고 알림
-        recvBuffer.OnWrite(len);
-
-        // 4. [핵심] 패킷 조립 (Parsing Loop)
-        // 받아온 데이터 안에서 완성된 패킷이 몇 개인지 확인하고 처리
+    
         while (true) { //패킷 데이더 하나씩 꺼내기
 
             int dataSize = recvBuffer.GetDataSize(); // 현재 쌓인 데이터 양
@@ -54,8 +33,59 @@ void ProcessRecv(int clientSock, ReceiveBuffer& recvBuffer) {
 
             // [정리] 처리한 만큼 readPos 이동 (다음 패킷을 위해)
             recvBuffer.OnRead(totalPacketSize);
-        }
-    }
+        }    
     
     close(clientSock);
+}
+
+void HandlePacket(int clientSock, ReceiveBuffer* recvBuffer) {
+
+    while(true){
+
+        if (recvBuffer->GetFreeSize() <= 0) {
+            cerr << "버퍼 오버플로우! (해커의 공격이거나 로직 오류)" << endl;
+            break;
+        }
+
+        int len = recv(clientSock, recvBuffer->GetWritePtr(), recvBuffer->GetFreeSize(), 0);
+    
+        if (len == 0) {
+            cout << "연결 종료" << endl;
+            break;
+        }
+
+        recvBuffer->OnWrite(len);
+
+        PacketHeader* header = reinterpret_cast<PacketHeader*>(recvBuffer->GetReadPtr());
+    
+        switch (ntohs(header->id)) {
+        case PKT_C_LOGIN:
+            {
+                uint16_t totalLen = ntohs(header->len);
+                cout << "totalLen: " << totalLen << endl;
+                PlayerInfoPacket* pkt = reinterpret_cast<PlayerInfoPacket*>(recvBuffer->GetReadPtr());
+                cout << "[로그인 요청] HP: " << pkt->hp << ", ATT: " << pkt->attack << endl;
+                recvBuffer->OnRead(totalLen);
+            }
+            break;
+
+        case PKT_C_MOVE:
+            {
+                uint16_t totalLen = ntohs(header->len);
+                cout << "totalLen: " << totalLen << endl;
+                MovePacket* pkt = reinterpret_cast<MovePacket*>(recvBuffer->GetReadPtr());
+                cout << "[이동 요청] X: " << pkt->x << " Y: " << pkt->y << " Z: " << pkt->z << endl;
+                recvBuffer->OnRead(totalLen);
+            }
+            break;
+        
+        case PKT_C_CHAT:
+            {
+                ProcessRecv(clientSock, *recvBuffer);
+                break;
+            }
+    
+        
+        }
+    }
 }
