@@ -6,6 +6,7 @@
 #include <sys/socket.h> // recv
 #include <arpa/inet.h>  // ntohs
 #include <unistd.h>     // close
+#include "packet_type.h"
 
 using namespace std;
 
@@ -61,4 +62,4 @@ public:
     char* GetReadPtr() { return &_buffer[_readPos]; }
 };
 void HandlePacket(int clientSock, ReceiveBuffer* recvBuffer);
-void ProcessRecv(int clientSock, ReceiveBuffer& recvBuffer);
+void ProcessRecv(int clientSock, ReceiveBuffer& recvBuffer, PacketHeader& header);

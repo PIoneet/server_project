@@ -50,6 +50,7 @@ int main() {
    
     ReceiveBuffer recvBuffer;
     HandlePacket(client_sock, &recvBuffer);
+    close(client_sock);
     close(server_sock);
     return 0;
 }

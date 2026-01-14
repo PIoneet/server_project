@@ -43,34 +43,27 @@ int main() {
         }
         switch(select) {
             case 1: {
-                vector<char> buffer(sizeof(PlayerInfoPacket));
-                PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer.data());
-                header->len = htons(sizeof(PlayerInfoPacket));
-                header->id = htons(PKT_C_LOGIN);         
-
-                // 3. 내용물 채우기
-                PlayerInfoPacket* loginPacket = reinterpret_cast<PlayerInfoPacket*>(buffer.data());
-                loginPacket->hp = 100;
-                loginPacket->attack = 50;
+                PlayerInfoPacket loginPacket;         
+                loginPacket.len = htons(sizeof(PlayerInfoPacket)); 
+                loginPacket.id = htons(PKT_C_LOGIN);
+                loginPacket.hp = 100;
+                loginPacket.attack = 50;
 
                 // 4. 전송 (구조체 자체를 바이트 배열인 척 보내기)
                 // (char*)로 강제 형변환해서 통째로 보냅니다.
-                send(clientSock, buffer.data(), sizeof(PlayerInfoPacket), 0);
+                send(clientSock, (char*)&loginPacket, sizeof(PlayerInfoPacket), 0);
                 break;
             }
             case 2: {
-                vector<char> buffer(sizeof(MovePacket));
-                PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer.data());
-                header->len = htons(sizeof(MovePacket));
-                header->id = htons(PKT_C_MOVE);
+                MovePacket movePacket;
+                movePacket.len = htons(sizeof(MovePacket));
+                movePacket.id = htons(PKT_C_MOVE);
                 
-                MovePacket* movePacket = reinterpret_cast<MovePacket*>(buffer.data());
-
-                movePacket->x = 1.0f;
-                movePacket->y = 2.0f;
-                movePacket->z = 3.0f;
+                movePacket.x = 1.0f;
+                movePacket.y = 2.0f;
+                movePacket.z = 3.0f;
                 
-                send(clientSock, buffer.data(), sizeof(MovePacket), 0);
+                send(clientSock, (char*)&movePacket, sizeof(MovePacket), 0);
                 break;
             }
             case 3: 
