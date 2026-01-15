@@ -30,9 +30,10 @@ void ProcessRecv(int clientSock, ReceiveBuffer& recvBuffer, PacketHeader& header
             
             // 데이터 읽기 (헤더 뒤에 있는 실제 데이터)
             char* bodyPtr = recvBuffer.GetReadPtr() + sizeof(PacketHeader);
+            char* sendPtr = recvBuffer.GetReadPtr(); //보낼떄는 헤더부터 보냄
             string msg(bodyPtr, bodyLen - sizeof(PacketHeader));
             cout << msg << endl;
-            send(clientSock, bodyPtr, bodyLen - sizeof(PacketHeader), 0);
+            send(clientSock, sendPtr, bodyLen, 0);
 
             // [정리] 처리한 만큼 readPos 이동 (다음 패킷을 위해)
             recvBuffer.OnRead(bodyLen);
@@ -47,7 +48,7 @@ void HandlePacket(int clientSock, ReceiveBuffer* recvBuffer) {
 
         if (recvBuffer->GetFreeSize() <= 0) {
             cerr << "버퍼 오버플로우! (해커의 공격이거나 로직 오류)" << endl;
-            break;
+            break;  
         }
 
         int len = recv(clientSock, recvBuffer->GetWritePtr(), recvBuffer->GetFreeSize(), 0);
@@ -68,7 +69,7 @@ void HandlePacket(int clientSock, ReceiveBuffer* recvBuffer) {
                 cout << "totalLen: " << totalLen << endl;
                 PlayerInfoPacket* pkt = reinterpret_cast<PlayerInfoPacket*>(recvBuffer->GetReadPtr());
                 cout << "[로그인 요청] HP: " << pkt->hp << ", ATT: " << pkt->attack << endl;
-                recvBuffer->OnRead(totalLen);
+                recvBuffer->OnRead(totalLen);   
             }
             break;
 

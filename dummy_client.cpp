@@ -90,6 +90,23 @@ int main() {
 
                 // 3) 전송
                 send(clientSock, &buffer[0], packetSize, 0);
+
+                int result = recv(clientSock, &buffer[0], packetSize, 0);
+                //커널이 buffer[0] 주소에 9바이트(packetSize)를 삽입해줌. 
+                cout << "받은 바이트 수: " << result << endl;
+                if (result <= 0) {
+                    cout << "서버 연결 종료" << endl;
+                    close(clientSock);
+                    return 0;
+                }
+                
+                char* bodyPtr = &buffer[sizeof(PacketHeader)];
+
+                string mksg(&buffer[4], 5); 
+                cout << "하드코딩 결과: " << mksg << endl;
+                string msg(bodyPtr, result-sizeof(PacketHeader)); //문자열 변수 초기화
+                cout << "서버로부터 에코된 메시지: " << msg << endl;
+                
                 break;
             }
                 
